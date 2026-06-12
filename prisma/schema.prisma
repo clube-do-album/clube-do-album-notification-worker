@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum NotificationType {
+  ALBUM_RATED
+  USER_FOLLOWED
+  RANKING_UPDATED
+
+  @@map("notification_type")
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  type            NotificationType @map("type")
+  recipientUserId String           @map("recipient_user_id")
+  actorUserId     String?          @map("actor_user_id")
+  albumId         String?          @map("album_id")
+  title           String
+  message         String
+  metadata        Json?
+
+  occurredAt DateTime  @map("occurred_at")
+  readAt     DateTime? @map("read_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@unique([type, recipientUserId, actorUserId, albumId, occurredAt])
+  @@index([recipientUserId, readAt, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([albumId, createdAt])
+  @@map("notifications")
+}
